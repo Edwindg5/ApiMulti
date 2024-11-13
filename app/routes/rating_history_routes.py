@@ -8,6 +8,7 @@ router = APIRouter()
 
 @router.post("/", response_model=RatingHistoryResponse)
 def create_rating_history(rating: RatingHistoryCreate, db: Session = Depends(get_db)):
+    
     db_rating = RatingHistory(**rating.dict())
     db.add(db_rating)
     db.commit()

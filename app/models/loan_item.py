@@ -3,6 +3,7 @@ from app.shared.config.db import Base
 from app.utils.security import TransactionStatus
 from sqlalchemy.sql import func
 
+
 class LoanItem(Base):
     __tablename__ = "loan_items"
 
@@ -12,4 +13,4 @@ class LoanItem(Base):
     prestatario_id = Column(Integer, ForeignKey("users.id_usuario"))
     fecha_prestamo = Column(TIMESTAMP, server_default=func.now())
     fecha_devolucion = Column(DATE)
-    estado = Column(TransactionStatus)
+    estado = Column(TransactionStatus) 

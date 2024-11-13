@@ -1,12 +1,27 @@
+# app/utils/security.py
+
 import jwt
 import os
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
+from enum import Enum
 
 # Cargar variables de entorno desde el archivo .env
 load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
 
+# Enumeración para el estado de una transacción
+class TransactionStatus(str, Enum):
+    PENDING = "PENDING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
+# Enumeración para roles de usuario
+class UserRole(str, Enum):
+    ADMIN = "ADMIN"
+    USER = "USER"
+
+# Función para crear un token de acceso
 def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes=30)):
     to_encode = data.copy()
     expire = datetime.utcnow() + expires_delta
@@ -14,6 +29,7 @@ def create_access_token(data: dict, expires_delta: timedelta = timedelta(minutes
     encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm="HS256")
     return encoded_jwt
 
+# Función para decodificar un token de acceso
 def decode_access_token(token: str):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=["HS256"])
