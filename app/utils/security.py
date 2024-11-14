@@ -10,12 +10,16 @@ from enum import Enum
 load_dotenv()
 SECRET_KEY = os.getenv("SECRET_KEY")
 
+
 # Enumeración para el estado de una transacción
 class TransactionStatus(str, Enum):
-    PENDING = "PENDING"
-    COMPLETED = "COMPLETED"
-    FAILED = "FAILED"
-
+    VENTA = "VENTA"
+    INTERCAMBIO = "INTERCAMBIO"
+    DONACIÓN = "DONACIÓN"
+    DISPONIBLE = "DISPONIBLE"
+    NO_DISPONIBLE = "NO_DISPONIBLE"
+    ELIMINADO = "ELIMINADO"
+    
 # Enumeración para roles de usuario
 class UserRole(str, Enum):
     ADMIN = "ADMIN"

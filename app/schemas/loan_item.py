@@ -12,7 +12,6 @@ class LoanItemBase(BaseModel):
 class LoanItemCreate(LoanItemBase):
     pass
 
-
 class LoanItemResponse(LoanItemBase):
     id_loan_items: int
     fecha_prestamo: str

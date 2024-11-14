@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.schemas.trade import TradeCreate, TradeResponse
-from app.models.trade import Trade
+from app.models.trades import Trade
 from app.shared.config.db import get_db
 
 router = APIRouter()

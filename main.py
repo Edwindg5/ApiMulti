@@ -1,8 +1,7 @@
 from fastapi import FastAPI
 from app.shared.config.db import engine, Base
 from app.routes import (
-    user_routes,
-    category_routes,
+    categories_routes,
     item_routes,
     trade_routes,
     shopping_cart_routes,
@@ -10,6 +9,7 @@ from app.routes import (
     loan_items_routes,
     rating_history_routes,
     notification_routes,
+    users_routes,
 )
 
 # Crear tablas en la base de datos si no existen
@@ -18,8 +18,8 @@ Base.metadata.create_all(bind=engine)
 app = FastAPI()
 
 # Incluir todas las rutas de los módulos de la aplicación
-app.include_router(user_routes.router, prefix="/users", tags=["Users"])
-app.include_router(category_routes.router, prefix="/categories", tags=["Categories"])
+app.include_router(users_routes.router, prefix="/users", tags=["Users"])
+app.include_router(categories_routes.router, prefix="/categories", tags=["Categories"])
 app.include_router(item_routes.router, prefix="/items", tags=["Items"])
 app.include_router(trade_routes.router, prefix="/trades", tags=["Trades"])
 app.include_router(shopping_cart_routes.router, prefix="/shopping-cart", tags=["Shopping Cart"])

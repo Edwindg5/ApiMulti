@@ -1,7 +1,7 @@
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.schemas.loan_item import LoanItemCreate, LoanItemResponse
-from app.models.loan_item import LoanItem
+from app.models.loan_items import LoanItem
 from app.shared.config.db import get_db
 
 router = APIRouter()
