@@ -1,4 +1,5 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, validator
+from datetime import datetime
 from app.utils.security import TransactionStatus
 
 class TradeBase(BaseModel):
@@ -17,3 +18,9 @@ class TradeResponse(TradeBase):
 
     class Config:
         orm_mode = True
+
+    @validator("fecha_oferta", pre=True, always=True)
+    def format_fecha_oferta(cls, value):
+        if isinstance(value, datetime):
+            return value.isoformat()  # Convierte a formato ISO 8601
+        return value

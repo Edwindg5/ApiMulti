@@ -1,5 +1,3 @@
-# app/utils/security.py
-
 import jwt
 import os
 from datetime import datetime, timedelta
@@ -12,14 +10,34 @@ SECRET_KEY = os.getenv("SECRET_KEY")
 
 
 # Enumeración para el estado de una transacción
+from enum import Enum
+
+# Enumeración para el estado general de la transacción
 class TransactionStatus(str, Enum):
+    PENDING = "PENDING"
+    COMPLETED = "COMPLETED"
+    CANCELLED = "CANCELLED"
     VENTA = "VENTA"
     INTERCAMBIO = "INTERCAMBIO"
     DONACIÓN = "DONACIÓN"
     DISPONIBLE = "DISPONIBLE"
     NO_DISPONIBLE = "NO_DISPONIBLE"
     ELIMINADO = "ELIMINADO"
-    
+
+
+# Enumeración para resultados de la transacción
+class TransactionResult(str, Enum):
+    PENDING = "PENDING"
+    COMPLETED = "COMPLETED"
+    FAILED = "FAILED"
+
+
+class TransactionType(str, Enum):
+    COMPRA = "compra"
+    VENTA = "venta"
+    INTERCAMBIO = "intercambio"
+    PRESTAMO = "prestamo"
+
 # Enumeración para roles de usuario
 class UserRole(str, Enum):
     ADMIN = "ADMIN"

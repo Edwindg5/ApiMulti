@@ -12,6 +12,8 @@ def create_trade(trade: TradeCreate, db: Session = Depends(get_db)):
     db.add(db_trade)
     db.commit()
     db.refresh(db_trade)
+    # Convertir fecha_oferta a string antes de devolver
+    db_trade.fecha_oferta = db_trade.fecha_oferta.isoformat()
     return db_trade
 
 @router.get("/{trade_id}", response_model=TradeResponse)

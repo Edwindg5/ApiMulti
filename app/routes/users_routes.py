@@ -23,6 +23,7 @@ def read_user(user_id: int, db: Session = Depends(get_db)):
 def update_user_route(user_id: int, user: UserUpdate, db: Session = Depends(get_db)):
     return update_user(user_id, user, db)
 
+
 @router.delete("/{user_id}")
 def delete_user_route(user_id: int, db: Session = Depends(get_db)):
     return delete_user(user_id, db)

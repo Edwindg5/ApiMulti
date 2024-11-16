@@ -1,18 +1,19 @@
-from sqlalchemy import Column, Integer, TIMESTAMP, Date, Enum, ForeignKey
-from sqlalchemy.sql import func
-from sqlalchemy.ext.declarative import declarative_base
-from app.utils.security import TransactionStatus
-
-Base = declarative_base()
+from sqlalchemy import Column, Integer, ForeignKey, DateTime, String
+from sqlalchemy.orm import relationship
+from app.shared.config.db import Base
+from datetime import datetime
 
 class LoanItem(Base):
-    __tablename__ = 'loan_items'
+    __tablename__ = "loan_items"
 
-    id_loan_items = Column(Integer, primary_key=True, autoincrement=True)
-    articulo_id = Column(Integer, ForeignKey('items.id_articulo'))
-    prestador_id = Column(Integer, ForeignKey('users.id_usuario'))
-    prestatario_id = Column(Integer, ForeignKey('users.id_usuario'))
-    fecha_prestamo = Column(TIMESTAMP, server_default=func.current_timestamp())
-    fecha_devolucion = Column(Date, nullable=True)
-    estado = Column(Enum(TransactionStatus), nullable=True)
-    usuario_id = Column(Integer, ForeignKey('users.id_usuario'))
+    id_loan_items = Column(Integer, primary_key=True, index=True)
+    articulo_id = Column(Integer, nullable=False)
+    prestador_id = Column(Integer, ForeignKey("users.id_usuario"), nullable=False)
+    prestatario_id = Column(Integer, ForeignKey("users.id_usuario"), nullable=False)
+    fecha_prestamo = Column(DateTime, nullable=False, default=datetime.utcnow)
+    fecha_devolucion = Column(DateTime, nullable=True)
+    estado = Column(String, nullable=False)
+
+    # Relaciones explícitas con el modelo User
+    prestador = relationship("User", foreign_keys=[prestador_id])
+    prestatario = relationship("User", foreign_keys=[prestatario_id])

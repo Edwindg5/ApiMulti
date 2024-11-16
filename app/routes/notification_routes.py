@@ -13,17 +13,16 @@ def create_notification(notification: NotificationCreate, db: Session = Depends(
     db.commit()
     db.refresh(db_notification)
     return db_notification
-
 @router.get("/{notification_id}", response_model=NotificationResponse)
 def read_notification(notification_id: int, db: Session = Depends(get_db)):
-    notification = db.query(Notification).filter(Notification.id_notificacion == notification_id).first()
+    notification = db.query(Notification).filter(Notification.id_notificacion == notification_id).first()  # Cambiado a id_notificacion
     if notification is None:
         raise HTTPException(status_code=404, detail="Notification not found")
     return notification
 
 @router.put("/{notification_id}", response_model=NotificationResponse)
 def update_notification(notification_id: int, notification: NotificationCreate, db: Session = Depends(get_db)):
-    db_notification = db.query(Notification).filter(Notification.id_notificacion == notification_id).first()
+    db_notification = db.query(Notification).filter(Notification.id_notificacion == notification_id).first()  # Cambiado a id_notificacion
     if db_notification is None:
         raise HTTPException(status_code=404, detail="Notification not found")
     for key, value in notification.dict().items():
@@ -34,7 +33,7 @@ def update_notification(notification_id: int, notification: NotificationCreate, 
 
 @router.delete("/{notification_id}")
 def delete_notification(notification_id: int, db: Session = Depends(get_db)):
-    db_notification = db.query(Notification).filter(Notification.id_notificacion == notification_id).first()
+    db_notification = db.query(Notification).filter(Notification.id_notificacion == notification_id).first()  # Cambiado a id_notificacion
     if db_notification is None:
         raise HTTPException(status_code=404, detail="Notification not found")
     db.delete(db_notification)

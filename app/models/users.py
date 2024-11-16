@@ -16,5 +16,20 @@ class User(Base):
     fecha_registro = Column(TIMESTAMP, server_default=func.current_timestamp())
     rol = Column(Enum(UserRole), nullable=False)
 
-    # Relación con el modelo Item
+    # Relaciones
     items = relationship("Item", back_populates="user")
+    shopping_cart = relationship("ShoppingCart", back_populates="user")
+    transactions = relationship("TransactionHistory", back_populates="user")
+    notifications = relationship("Notification", back_populates="user")
+    
+    # Explicit foreign keys for RatingHistory
+    ratings = relationship(
+        "RatingHistory",
+        foreign_keys="RatingHistory.usuario_id",
+        back_populates="user"
+    )
+    given_ratings = relationship(
+        "RatingHistory",
+        foreign_keys="RatingHistory.calificador_id",
+        back_populates="calificador"
+    )
