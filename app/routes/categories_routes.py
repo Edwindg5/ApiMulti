@@ -1,4 +1,4 @@
-# routes/category.py
+from typing import List
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from app.schemas.categories import CategoryCreate, CategoryResponse
@@ -41,3 +41,10 @@ def delete_category(category_id: int, db: Session = Depends(get_db)):
     db.delete(db_category)
     db.commit()
     return {"message": "Category deleted successfully"}
+
+@router.get("/", response_model=List[CategoryResponse])
+def list_categories(db: Session = Depends(get_db)):
+    """
+    Endpoint para listar todas las categorías disponibles.
+    """
+    return db.query(Category).all()

@@ -1,21 +1,22 @@
 from pydantic import BaseModel
-from datetime import date
+from typing import Optional, Literal
+from datetime import datetime
 
-class ItemBase(BaseModel):
+class ItemCreate(BaseModel):
     nombre_articulo: str
-    descripcion: str
-    categoria_id: int
+    descripcion: Optional[str]
+    id_categoria: int
     precio: float
-    tipo_transaccion: str
+    tipo_transaccion: Literal['COMPRA', 'VENTA', 'INTERCAMBIO', 'PRESTAMO']  # Opciones válidas
     usuario_id: int
-    estado: str
-    fecha_publicacion: date
+    estado: Literal[
+        'PENDING', 'COMPLETED', 'CANCELLED', 'VENTA', 'INTERCAMBIO',
+        'DONACIÓN', 'DISPONIBLE', 'NO_DISPONIBLE', 'ELIMINADO', 'COMPRA'
+    ]  # Opciones válidas para el estado
 
-class ItemCreate(ItemBase):
-    pass
-
-class ItemResponse(ItemBase):
+class ItemResponse(ItemCreate):
     id_articulo: int
+    fecha_publicacion: datetime  # Validación para mantener solo la fecha
 
     class Config:
-        from_attributes = True  # Compatibilidad con Pydantic v2
+        orm_mode = True

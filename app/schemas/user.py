@@ -3,6 +3,7 @@ from typing import Optional
 from app.utils.security import UserRole
 from datetime import datetime
 
+
 class UserBase(BaseModel):
     nombre: str
     correo_electronico: EmailStr
@@ -10,8 +11,10 @@ class UserBase(BaseModel):
     calificacion: Optional[float] = None
     rol: UserRole
 
+
 class UserCreate(UserBase):
     contrasena: str
+
 
 class UserUpdate(BaseModel):
     nombre: Optional[str] = None
@@ -20,9 +23,16 @@ class UserUpdate(BaseModel):
     calificacion: Optional[float] = None
     rol: Optional[UserRole] = None
 
+
 class UserResponse(UserBase):
     id_usuario: int
     fecha_registro: datetime
 
     class Config:
         orm_mode = True
+
+
+# Modelo para verificar usuario
+class VerifyUserRequest(BaseModel):
+    name: str
+    email: EmailStr

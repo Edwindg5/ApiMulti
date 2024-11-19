@@ -1,4 +1,5 @@
 from fastapi import FastAPI
+from fastapi.middleware.cors import CORSMiddleware
 from app.shared.config.db import engine, Base
 from app.routes import (
     categories_routes,
@@ -17,10 +18,23 @@ Base.metadata.create_all(bind=engine)
 
 app = FastAPI()
 
+# Configurar CORS
+origins = [
+    "http://localhost:4200",  # Origen del frontend en desarrollo
+]
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Cambia esto a los dominios específicos de tu frontend en producción
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+
 # Incluir todas las rutas de los módulos de la aplicación
 app.include_router(users_routes.router, prefix="/users", tags=["Users"])
-app.include_router(categories_routes.router, prefix="/categories", tags=["Categories"])
-app.include_router(item_routes.router, prefix="/items", tags=["Items"])
+app.include_router(categories_routes.router, tags=["Categories"])
+app.include_router(item_routes.router, tags=["Items"])
 app.include_router(trade_routes.router, prefix="/trades", tags=["Trades"])
 app.include_router(shopping_cart_routes.router, prefix="/shopping-cart", tags=["Shopping Cart"])
 app.include_router(transaction_history_routes.router, prefix="/transaction-history", tags=["Transaction History"])

@@ -22,7 +22,6 @@ class User(Base):
     transactions = relationship("TransactionHistory", back_populates="user")
     notifications = relationship("Notification", back_populates="user")
     
-    # Explicit foreign keys for RatingHistory
     ratings = relationship(
         "RatingHistory",
         foreign_keys="RatingHistory.usuario_id",

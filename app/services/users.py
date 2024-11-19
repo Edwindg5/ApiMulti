@@ -3,6 +3,7 @@ from fastapi import HTTPException
 from sqlalchemy.exc import IntegrityError
 from app.models.users import User
 from app.schemas.user import UserCreate, UserUpdate
+from app.utils.security import verify_password, hash_password
 
 def get_user_by_correo_electronico(correo: str, db: Session):
     return db.query(User).filter(User.correo_electronico == correo).first()
@@ -11,7 +12,8 @@ def create_user(user_data: UserCreate, db: Session):
     existing_user = get_user_by_correo_electronico(user_data.correo_electronico, db)
     if existing_user:
         raise HTTPException(status_code=400, detail="Correo electrónico ya registrado.")
-    
+    hashed_password = hash_password(user_data.contrasena)
+    user_data.contrasena = hashed_password
     new_user = User(**user_data.dict())
     db.add(new_user)
     try:
@@ -28,6 +30,12 @@ def get_user_by_id(user_id: int, db: Session):
         raise HTTPException(status_code=404, detail="Usuario no encontrado.")
     return user
 
+def authenticate_user(email: str, password: str, db: Session):
+    user = get_user_by_correo_electronico(email, db)
+    if not user or not verify_password(password, user.contrasena):
+        return None
+    return user
+
 def update_user(user_id: int, user_data: UserUpdate, db: Session):
     db_user = get_user_by_id(user_id, db)
     for key, value in user_data.dict(exclude_unset=True).items():
@@ -40,4 +48,3 @@ def delete_user(user_id: int, db: Session):
     db_user = get_user_by_id(user_id, db)
     db.delete(db_user)
     db.commit()
-    return {"message": "Usuario eliminado correctamente"}
