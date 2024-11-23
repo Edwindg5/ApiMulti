@@ -1,10 +1,10 @@
-from fastapi import APIRouter, UploadFile, File, HTTPException 
+from fastapi import APIRouter, UploadFile, File, HTTPException
 import boto3
 import os
 from botocore.exceptions import NoCredentialsError, PartialCredentialsError
 from dotenv import load_dotenv
 from fastapi.responses import StreamingResponse
-import io   
+import io
 
 router = APIRouter()
 
@@ -21,11 +21,12 @@ AWS_REGION = os.getenv("AWS_REGION")
 # Inicializar cliente de S3 con las credenciales temporales
 s3_client = boto3.client(
     's3',
-    aws_access_key_id=os.getenv("AWS_ACCESS_KEY_ID"),
-    aws_secret_access_key=os.getenv("AWS_SECRET_ACCESS_KEY"),
-    aws_session_token=os.getenv("AWS_SECRET_SESSION_TOKEN"),
-    region_name=os.getenv("AWS_REGION"),
+    aws_access_key_id=AWS_ACCESS_KEY_ID,
+    aws_secret_access_key=AWS_SECRET_ACCESS_KEY,
+    aws_session_token=AWS_SECRET_SESSION_TOKEN,
+    region_name=AWS_REGION,
 )
+
 @router.post("/upload")
 async def upload_file_to_s3(file: UploadFile = File(...)):
     try:
@@ -43,15 +44,11 @@ async def upload_file_to_s3(file: UploadFile = File(...)):
 
         return {"message": "File uploaded successfully", "url": file_url}
 
-    except (NoCredentialsError, PartialCredentialsError) as e:
+    except (NoCredentialsError, PartialCredentialsError):
         raise HTTPException(status_code=500, detail="AWS credentials not configured correctly")
     except Exception as e:
-        print("AWS_ACCESS_KEY_ID:", os.getenv("AWS_ACCESS_KEY_ID"))
-        print("AWS_SECRET_ACCESS_KEY:", os.getenv("AWS_SECRET_ACCESS_KEY"))
-        print("AWS_BUCKET_NAME:", os.getenv("AWS_BUCKET_NAME"))
-        print("AWS_SECRET_SESSION_TOKEN:", os.getenv("AWS_SECRET_SESSION_TOKEN"))
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
-    
+
 @router.get("/files")
 async def list_files_in_s3():
     try:
@@ -70,11 +67,11 @@ async def list_files_in_s3():
 
         return {"files": file_urls}
 
-    except (NoCredentialsError, PartialCredentialsError) as e:
+    except (NoCredentialsError, PartialCredentialsError):
         raise HTTPException(status_code=500, detail="AWS credentials not configured correctly")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
-    
+
 @router.get("/files/{filename}")
 async def get_file_from_s3(filename: str):
     try:
@@ -89,7 +86,7 @@ async def get_file_from_s3(filename: str):
 
     except s3_client.exceptions.NoSuchKey:
         raise HTTPException(status_code=404, detail="File not found")
-    except (NoCredentialsError, PartialCredentialsError) as e:
+    except (NoCredentialsError, PartialCredentialsError):
         raise HTTPException(status_code=500, detail="AWS credentials not configured correctly")
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"An error occurred: {str(e)}")
