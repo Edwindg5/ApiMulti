@@ -24,9 +24,10 @@ class UserUpdate(BaseModel):
     rol: Optional[UserRole] = None
 
 
-class UserResponse(UserBase):
+class UserResponse(BaseModel):
     id_usuario: int
-    fecha_registro: datetime
+    nombre: str
+    telefono: Optional[str] = None
 
     class Config:
         orm_mode = True
