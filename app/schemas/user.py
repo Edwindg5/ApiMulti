@@ -14,6 +14,7 @@ class UserBase(BaseModel):
 
 class UserCreate(UserBase):
     contrasena: str
+    profile_picture_url: Optional[str] = None
 
 
 class UserUpdate(BaseModel):
@@ -28,6 +29,7 @@ class UserResponse(BaseModel):
     id_usuario: int
     nombre: str
     telefono: Optional[str] = None
+    profile_picture_url: Optional[str] = None
 
     class Config:
         orm_mode = True

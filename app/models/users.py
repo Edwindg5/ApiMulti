@@ -15,6 +15,7 @@ class User(Base):
     calificacion = Column(DECIMAL(3, 2), nullable=True)
     fecha_registro = Column(TIMESTAMP, server_default=func.current_timestamp())
     rol = Column(Enum(UserRole), nullable=False)
+    profile_picture_url = Column(String(255), nullable=True) 
 
     # Relaciones
     items = relationship("Item", back_populates="user")

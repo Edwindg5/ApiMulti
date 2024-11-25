@@ -36,7 +36,19 @@ def login(email: str, password: str, db: Session = Depends(get_db)):
         raise HTTPException(status_code=401, detail="Credenciales incorrectas")
 
     access_token = create_access_token(data={"sub": user.correo_electronico})
-    return {"access_token": access_token, "token_type": "bearer"}
+
+    # Devolver también información del usuario
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": user.id_usuario,
+            "name": user.nombre,
+            "email": user.correo_electronico,
+            # Agrega otros campos si son necesarios
+        }
+    }
+
 
 
 # Crear usuario
@@ -55,13 +67,13 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
         calificacion=user.calificacion,
         rol=user.rol,
         contrasena=hashed_password,
+        profile_picture_url=user.profile_picture_url,  # Guardar la URL de la imagen
     )
     db.add(new_user)
     db.commit()
     db.refresh(new_user)
     
     return new_user
-
 
 # Obtener un usuario por ID
 @router.get("/{user_id}", response_model=UserResponse)

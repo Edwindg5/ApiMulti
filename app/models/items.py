@@ -17,13 +17,14 @@ class Item(Base):
     usuario_id = Column(Integer, ForeignKey("users.id_usuario"), nullable=False)
     estado = Column(String, nullable=False)
     fecha_publicacion = Column(TIMESTAMP, server_default=func.current_timestamp())
-    image_url = Column(String(255), nullable=True)
+    url_imagen = Column(String(225), nullable=True)
+    cantidad = Column(Integer, nullable=False)
     
     
 
     # Relaciones
     user = relationship("User", back_populates="items", lazy="joined")
-
+ 
     shopping_cart = relationship("ShoppingCart", back_populates="articulo")
     transactions = relationship("TransactionHistory", back_populates="item")
     categoria = relationship("Category", back_populates="items")

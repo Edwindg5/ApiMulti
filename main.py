@@ -30,7 +30,7 @@ app.add_middleware(
 )
 
 # Incluir todas las rutas de los módulos de la aplicación
-app.include_router(upload.router, prefix="/api", tags=["Upload"])
+app.include_router(upload.router, tags=["Upload"])
 app.include_router(users_routes.router, prefix="/users", tags=["Users"])
 app.include_router(categories_routes.router, tags=["Categories"])
 app.include_router(item_routes.router, tags=["Items"])
