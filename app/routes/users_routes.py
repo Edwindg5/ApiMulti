@@ -34,18 +34,15 @@ def login(email: str, password: str, db: Session = Depends(get_db)):
     user = authenticate_user(email, password, db)
     if not user:
         raise HTTPException(status_code=401, detail="Credenciales incorrectas")
-
+    
     access_token = create_access_token(data={"sub": user.correo_electronico})
-
-    # Devolver también información del usuario
     return {
         "access_token": access_token,
         "token_type": "bearer",
         "user": {
             "id": user.id_usuario,
             "name": user.nombre,
-            "email": user.correo_electronico,
-            # Agrega otros campos si son necesarios
+            "email": user.correo_electronico
         }
     }
 

@@ -8,6 +8,7 @@ from app.models.users import User
 from app.models.categories import Category
 from app.schemas.items import ItemCreate, ItemResponse, UpdateItem
 from app.shared.config.db import get_db
+from app.shared.middlewares.auth_middleware import get_current_user
 
 
 logger = getLogger(__name__)
@@ -18,7 +19,6 @@ router = APIRouter(prefix="/items", tags=["Items"])
 # Crear un artículo
 @router.post("/", response_model=ItemResponse, status_code=201)
 def crear_item(item: ItemCreate, db: Session = Depends(get_db)):
-    # Validar usuario y categoría
     if item.usuario_id is None:
         raise HTTPException(status_code=400, detail="El campo usuario_id es obligatorio.")
     
@@ -30,8 +30,7 @@ def crear_item(item: ItemCreate, db: Session = Depends(get_db)):
     if not category:
         raise HTTPException(status_code=404, detail="La categoría asociada no existe.")
     
-    # Validar imagen y cantidad
-    if item.imagen_url is None:
+    if item.url_imagen is None:
         raise HTTPException(status_code=400, detail="La URL de la imagen es obligatoria.")
     
     try:
@@ -43,10 +42,9 @@ def crear_item(item: ItemCreate, db: Session = Depends(get_db)):
             tipo_transaccion=item.tipo_transaccion,
             usuario_id=item.usuario_id,
             estado=item.estado,
-            url_imagen=item.imagen_url,
-            cantidad=item.cantidad  # Se guarda la cantidad
+            url_imagen=item.url_imagen,  # Correct field name
+            cantidad=item.cantidad
         )
-        
         db.add(db_item)
         db.commit()
         db.refresh(db_item)
@@ -59,7 +57,6 @@ def crear_item(item: ItemCreate, db: Session = Depends(get_db)):
     except SQLAlchemyError:
         db.rollback()
         raise HTTPException(status_code=500, detail="Error del servidor.")
-
 
 
     
@@ -110,17 +107,19 @@ def actualizar_item(item_id: int, item_update: UpdateItem, db: Session = Depends
         raise HTTPException(status_code=500, detail="Error del servidor.")
 
 
-# Eliminar un artículo por ID
+# Eliminar un artículo
 @router.delete("/{item_id}", status_code=200)
-def eliminar_item(item_id: int, db: Session = Depends(get_db)):
+def eliminar_item(
+    item_id: int, 
+    db: Session = Depends(get_db), 
+    current_user: User = Depends(get_current_user)
+):
     item = db.query(Item).filter(Item.id_articulo == item_id).first()
-    if not item:
-        raise HTTPException(status_code=404, detail="Artículo no encontrado")
-
+    if not item or item.usuario_id != current_user.id_usuario:
+        raise HTTPException(status_code=403, detail="Acceso denegado.")
     db.delete(item)
     db.commit()
     return {"message": "Artículo eliminado exitosamente"}
-
 
 
 # Obtener artículos por categoríafrom sqlalchemy.orm import joinedload

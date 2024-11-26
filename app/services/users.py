@@ -5,7 +5,7 @@ from app.models.users import User
 from app.schemas.user import UserCreate, UserUpdate
 from app.utils.security import verify_password, hash_password
 
-def get_user_by_correo_electronico(correo: str, db: Session):
+def get_user_by_correo_electronico(correo: str, db: Session):    
     return db.query(User).filter(User.correo_electronico == correo).first()
 
 def create_user(user_data: UserCreate, db: Session):
