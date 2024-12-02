@@ -14,7 +14,7 @@ def get_aws_credentials_from_secrets(secret_name: str, region_name: str):
         raise RuntimeError(f"Error al obtener el secreto: {str(e)}")
 
 AWS_REGION = os.getenv("AWS_REGION", "us-east-1")
-AWS_BUCKET_NAME = os.getenv("AWS_BUCKET_NAME", "segundamanoup")
+AWS_BUCKET_NAME = os.getenv("AWS_BUCKET_NAME", "proyectocuarto")
 
 # Obtener credenciales desde Secrets Manager
 secrets = get_aws_credentials_from_secrets("MiSecretName", AWS_REGION)

@@ -4,6 +4,9 @@ from fastapi.security import OAuth2PasswordBearer
 from app.models.users import User
 from app.schemas.user import UserCreate, UserResponse, UserUpdate, VerifyUserRequest
 from app.shared.config.db import get_db
+from app.utils.security import hash_password, UserRole
+from app.utils.security import verify_password
+from app.shared.middlewares.auth_middleware import get_current_user
 from app.services.users import (
     create_user,
     get_user_by_id,
@@ -11,9 +14,84 @@ from app.services.users import (
     delete_user,
     authenticate_user,
 )
+
+
+
+def create_admin_user(db: Session):
+    admin_email = "admin@example.com"
+    admin_password = "admin123"  # Asegúrate de que esto sea seguro en producción
+    admin_name = "Admin"
+
+    admin = db.query(User).filter(User.correo_electronico == admin_email).first()
+    if not admin:
+        hashed_password = hash_password(admin_password)
+        admin = User(
+            nombre=admin_name,
+            correo_electronico=admin_email,
+            contrasena=hashed_password,
+            rol=UserRole.ADMIN  # Rol de administrador
+        )
+        db.add(admin)
+        db.commit()
+        
+        
+        
+def admin_required(current_user: dict = Depends(get_current_user), db: Session = Depends(get_db)):
+    user = db.query(User).filter(User.id_usuario == current_user["id"]).first()
+    if not user or user.rol != UserRole.ADMIN:
+        raise HTTPException(status_code=403, detail="Acceso denegado")
+    return current_user
+        
+        
 from app.utils.security import create_access_token, hash_password, decode_access_token
 
 router = APIRouter(prefix="/users", tags=["users"])
+
+
+
+@router.post("/login")
+def login(email: str, password: str, db: Session = Depends(get_db)):
+    user = authenticate_user(email, password, db)
+    if not user:
+        raise HTTPException(status_code=401, detail="Credenciales incorrectas")
+    
+    access_token = create_access_token(data={"sub": user.correo_electronico})
+    return {
+        "access_token": access_token,
+        "token_type": "bearer",
+        "user": {
+            "id": user.id_usuario,
+            "name": user.nombre,
+            "email": user.correo_electronico
+        }
+    }
+
+
+
+# Obtener todos los usuarios con campos específicos
+@router.get("/users", tags=["users"])
+def get_users(db: Session = Depends(get_db)):
+    users = db.query(
+        User.id_usuario,  # Asegúrate de incluir id_usuario
+        User.nombre,
+        User.correo_electronico,
+        User.telefono,
+        User.fecha_registro.label("fecha_creacion")
+    ).filter(User.rol != UserRole.ADMIN).all()
+
+    return {
+        "data": [
+            {
+                "id_usuario": user.id_usuario,
+                "nombre": user.nombre,
+                "correo_electronico": user.correo_electronico,
+                "telefono": user.telefono,
+                "fecha_creacion": user.fecha_creacion,
+            }
+            for user in users
+        ]
+    }
+
 
 
 # Endpoint para verificar usuario con ilike
@@ -45,6 +123,8 @@ def login(email: str, password: str, db: Session = Depends(get_db)):
             "email": user.correo_electronico
         }
     }
+
+
 
 
 
@@ -91,5 +171,10 @@ def update_user_route(user_id: int, user: UserUpdate, db: Session = Depends(get_
 # Eliminar un usuario
 @router.delete("/{user_id}")
 def delete_user_route(user_id: int, db: Session = Depends(get_db)):
-    delete_user(user_id, db)
+    user = db.query(User).filter(User.id_usuario == user_id).first()
+    if not user:
+        raise HTTPException(status_code=404, detail="Usuario no encontrado")
+    db.delete(user)
+    db.commit()
     return {"message": "Usuario eliminado correctamente"}
+

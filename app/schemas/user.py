@@ -2,7 +2,10 @@ from pydantic import BaseModel, EmailStr
 from typing import Optional
 from app.utils.security import UserRole
 from datetime import datetime
-
+from enum import Enum
+class UserRole(str, Enum):
+    ADMIN = "ADMIN"
+    USER = "USER"
 
 class UserBase(BaseModel):
     nombre: str
@@ -28,6 +31,7 @@ class UserUpdate(BaseModel):
 class UserResponse(BaseModel):
     id_usuario: int
     nombre: str
+    correo_electronico: str 
     telefono: Optional[str] = None
     profile_picture_url: Optional[str] = None
 
@@ -39,3 +43,6 @@ class UserResponse(BaseModel):
 class VerifyUserRequest(BaseModel):
     name: str
     email: EmailStr
+class LoginRequest(BaseModel):
+    email: str
+    password: str

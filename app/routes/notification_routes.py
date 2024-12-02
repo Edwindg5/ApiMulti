@@ -3,6 +3,7 @@ from sqlalchemy.orm import Session
 from app.schemas.notification import NotificationCreate, NotificationResponse
 from app.models.notifications import Notification
 from app.shared.config.db import get_db
+from typing import List
 
 router = APIRouter()
 
@@ -13,6 +14,15 @@ def create_notification(notification: NotificationCreate, db: Session = Depends(
     db.commit()
     db.refresh(db_notification)
     return db_notification
+
+
+
+@router.get("/user/{user_id}", response_model=List[NotificationResponse])
+def get_notifications_by_user(user_id: int, db: Session = Depends(get_db)):
+    notifications = db.query(Notification).filter(Notification.usuario_id == user_id).all()
+    return notifications
+
+
 @router.get("/{notification_id}", response_model=NotificationResponse)
 def read_notification(notification_id: int, db: Session = Depends(get_db)):
     notification = db.query(Notification).filter(Notification.id_notificacion == notification_id).first()  # Cambiado a id_notificacion

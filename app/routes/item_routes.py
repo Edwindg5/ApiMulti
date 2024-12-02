@@ -61,6 +61,63 @@ def crear_item(item: ItemCreate, db: Session = Depends(get_db)):
 
     
 from sqlalchemy.orm import joinedload
+from fastapi import Query
+
+@router.get("/search", response_model=List[dict])
+async def search_items(
+    query: str = Query(..., min_length=1, description="Letra inicial o nombre completo del artículo"),
+    db: Session = Depends(get_db)
+):
+    try:
+        # Buscar artículos que comiencen con la letra o coincidan con el texto completo
+        items = (
+            db.query(Item)
+            .options(joinedload(Item.user))  # Solo cargamos la relación necesaria
+            .filter(Item.nombre_articulo.ilike(f"{query}%"))  # Coincidencia inicial
+            .all()
+        )
+
+        # Verificar si no hay resultados
+        if not items:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No se encontraron artículos que coincidan con: '{query}'"
+            )
+
+        # Crear la respuesta solo con los campos necesarios
+        response = [
+            {
+                "nombre_articulo": item.nombre_articulo,
+                "url_imagen": item.url_imagen,
+                "nombre_usuario": item.user.nombre if item.user else None
+            }
+            for item in items
+        ]
+
+        return response
+
+    except SQLAlchemyError as e:
+        logger.error(f"Error al buscar artículos: {e}")
+        raise HTTPException(status_code=500, detail="Error del servidor.")
+    
+    
+    
+    
+    
+@router.get("/all", response_model=List[ItemResponse])
+def get_all_items(db: Session = Depends(get_db)):
+    try:
+        items = (
+            db.query(Item)
+            .options(joinedload(Item.user), joinedload(Item.categoria))
+            .all()
+        )
+        if not items:
+            raise HTTPException(status_code=404, detail="No se encontraron artículos registrados.")
+        return items
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Error al obtener los artículos.")
+
 
 
 @router.post("/verify", status_code=200)
@@ -124,15 +181,18 @@ def eliminar_item(
 
 # Obtener artículos por categoríafrom sqlalchemy.orm import joinedload
 
-
 @router.get("/categories/{category_id}/items", response_model=List[ItemResponse])
 def get_items_by_category(category_id: int, db: Session = Depends(get_db)):
-    items = (
-        db.query(Item)
-        .options(joinedload(Item.user), joinedload(Item.categoria))  # Asegura la carga de relaciones
-        .filter(Item.id_categoria == category_id)
-        .all()
-    )
-    if not items:
-        raise HTTPException(status_code=404, detail="No se encontraron artículos para esta categoría")
-    return items
+    try:
+        # Query para obtener artículos por categoría con detalles del usuario
+        items = (
+            db.query(Item)
+            .options(joinedload(Item.user), joinedload(Item.categoria))
+            .filter(Item.id_categoria == category_id)
+            .all()
+        )
+        if not items:
+            raise HTTPException(status_code=404, detail="No se encontraron artículos para esta categoría")
+        return items
+    except Exception as e:
+        raise HTTPException(status_code=500, detail="Error al obtener los artículos.")

@@ -35,4 +35,3 @@ class ItemResponse(ItemCreate):
 
     class Config:
         orm_mode = True
-
