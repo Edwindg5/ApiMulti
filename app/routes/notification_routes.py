@@ -15,6 +15,11 @@ def create_notification(notification: NotificationCreate, db: Session = Depends(
     db.refresh(db_notification)
     return db_notification
 
+@router.get("/", response_model=List[NotificationResponse])
+def get_all_notifications(db: Session = Depends(get_db)):
+    notifications = db.query(Notification).all()
+    return notifications
+
 
 
 @router.get("/user/{user_id}", response_model=List[NotificationResponse])
