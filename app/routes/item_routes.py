@@ -63,6 +63,21 @@ def crear_item(item: ItemCreate, db: Session = Depends(get_db)):
 from sqlalchemy.orm import joinedload
 from fastapi import Query
 
+@router.get("/", response_model=List[ItemResponse])
+async def get_all_items_by_user(id_user: int, db: Session=Depends(get_db)):
+    try:
+        # Obtener artículos por usuario con detalles del usuario
+        items = (
+            db.query(Item)
+            .options(joinedload(Item.user))  # Carga las relaciones
+            .filter(Item.usuario_id == id_user)
+            .all()
+        )
+        return items
+    except SQLAlchemyError as e:
+        logger.error(f"Error al obtener artículos: {e}")
+        raise HTTPException(status_code=500, detail="Error del servidor.")
+
 @router.get("/search", response_model=List[dict])
 async def search_items(
     query: str = Query(..., min_length=1, description="Letra inicial o nombre completo del artículo"),
