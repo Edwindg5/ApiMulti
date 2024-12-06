@@ -6,7 +6,7 @@ from logging import getLogger
 from app.models.items import Item
 from app.models.users import User
 from app.models.categories import Category
-from app.schemas.items import ItemCreate, ItemResponse, UpdateItem
+from app.schemas.items import ItemCreate, ItemResponse, UpdateItem,UpdateItemByUser
 from app.shared.config.db import get_db
 from app.shared.middlewares.auth_middleware import get_current_user
 
@@ -59,7 +59,38 @@ def crear_item(item: ItemCreate, db: Session = Depends(get_db)):
         raise HTTPException(status_code=500, detail="Error del servidor.")
 
 
-    
+@router.put("/{item_id}", response_model=ItemResponse)
+def actualizar_item(item_id: int, item_update: UpdateItem, db: Session = Depends(get_db)):
+    try:
+        # Verificar si el artículo existe
+        db_item = db.query(Item).filter(Item.id_articulo == item_id).first()
+        if not db_item:
+            raise HTTPException(status_code=404, detail="Artículo no encontrado")
+
+        # Validar que la categoría existe si se proporciona un `id_categoria`
+        if item_update.id_categoria is not None:
+            category = db.query(Category).filter(Category.id_categoria == item_update.id_categoria).first()
+            if not category:
+                raise HTTPException(status_code=404, detail="La categoría asociada no existe.")
+
+        # Actualizar solo los campos enviados en el cuerpo de la solicitud
+        updated_fields = item_update.dict(exclude_unset=True)
+        for key, value in updated_fields.items():
+            setattr(db_item, key, value)
+
+        # Guardar los cambios
+        db.commit()
+        db.refresh(db_item)
+        return db_item
+
+    except IntegrityError as e:
+        db.rollback()
+        raise HTTPException(status_code=400, detail=f"Error de integridad en la base de datos: {str(e)}")
+    except SQLAlchemyError as e:
+        db.rollback()
+        raise HTTPException(status_code=500, detail=f"Error del servidor: {str(e)}")
+
+
 from sqlalchemy.orm import joinedload
 from fastapi import Query
 
@@ -78,6 +109,60 @@ async def get_all_items_by_user(id_user: int, db: Session=Depends(get_db)):
         logger.error(f"Error al obtener artículos: {e}")
         raise HTTPException(status_code=500, detail="Error del servidor.")
 
+#searchbynameitems, utilizando %like%
+@router.get("/search_by_name", response_model=List[ItemResponse])
+async def search_item_by_name(
+    name: str = Query(..., min_length=1, description="Nombre del artículo a buscar"),
+    db: Session = Depends(get_db)
+):
+    try:
+        items = (
+            db.query(Item)
+            .options(joinedload(Item.user))  # Solo cargamos la relación necesaria
+            .filter(Item.nombre_articulo.ilike(f"%{name}%"))  # Coincidencia parcial
+            .all()
+        )
+
+        # Verificar si no hay resultados
+        if not items:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No se encontraron artículos que coincidan con: '{name}'"
+            )
+
+        # Retornar los artículos encontrados
+        return items
+
+    except SQLAlchemyError as e:
+        logger.error(f"Error al buscar artículos: {e}")
+        raise HTTPException(status_code=500, detail="Error del servidor.")
+
+
+#itemsbyuser 
+
+@router.get("/by_user/{id_user}", response_model=List[ItemResponse])
+async def get_items_by_user(id_user: int, db: Session = Depends(get_db)):
+    try:
+        # Obtener artículos por usuario
+        items = (
+            db.query(Item)
+            .options(joinedload(Item.user)) 
+            .filter(Item.usuario_id == id_user)
+            .all()
+        )
+        # Verificar si no hay resultados
+        if not items:
+            raise HTTPException(
+                status_code=404,
+                detail=f"No se encontraron artículos asociados al usuario con ID: {id_user}"
+            )
+        # Retornar los artículos encontrados
+        return items
+    except SQLAlchemyError as e:
+        logger.error(f"Error al obtener artículos: {e}")
+        raise HTTPException(status_code=500, detail="Error del servidor.")
+    
+    
 @router.get("/search", response_model=List[dict])
 async def search_items(
     query: str = Query(..., min_length=1, description="Letra inicial o nombre completo del artículo"),
@@ -184,11 +269,8 @@ def actualizar_item(item_id: int, item_update: UpdateItem, db: Session = Depends
 def eliminar_item(
     item_id: int, 
     db: Session = Depends(get_db), 
-    current_user: User = Depends(get_current_user)
 ):
     item = db.query(Item).filter(Item.id_articulo == item_id).first()
-    if not item or item.usuario_id != current_user.id_usuario:
-        raise HTTPException(status_code=403, detail="Acceso denegado.")
     db.delete(item)
     db.commit()
     return {"message": "Artículo eliminado exitosamente"}

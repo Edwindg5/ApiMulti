@@ -1,8 +1,8 @@
 from pydantic import BaseModel
 from typing import Optional, Literal
 from datetime import datetime
-from app.schemas.categories import CategoryResponse
 from app.schemas.user import UserResponse
+from app.schemas.categories import CategoryResponse
 from typing import List
 
 class ItemCreate(BaseModel):
@@ -16,6 +16,7 @@ class ItemCreate(BaseModel):
     url_imagen: Optional[str] = None  # Ajustado el nombre
     cantidad: int = 0
 
+
 class UpdateItem(BaseModel):
     nombre_articulo: Optional[str] = None
     descripcion: Optional[str] = None
@@ -27,11 +28,22 @@ class UpdateItem(BaseModel):
     url_imagen: Optional[str] = None
     cantidad: Optional[int] = None
 
+
+class UpdateItemByUser(BaseModel):
+    usuario_id: Optional[int] = None
+    id_categoria: Optional[int] = None
+    nombre_articulo: Optional[str] = None
+    descripcion: Optional[str] = None
+    precio: Optional[float] = None
+    estado: Optional[Literal["PENDING", "COMPLETED", "CANCELLED", "DISPONIBLE", "NO_DISPONIBLE", "ELIMINADO"]] = None
+    cantidad: Optional[int] = None
+
 class ItemResponse(ItemCreate):
     id_articulo: int
     fecha_publicacion: datetime
     categoria: Optional[CategoryResponse] = None
     user: Optional[UserResponse] = None
 
+    
     class Config:
         orm_mode = True

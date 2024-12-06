@@ -9,7 +9,7 @@ class CategoryCreate(CategoryBase):
     pass
 
 class CategoryResponse(CategoryBase):
-    id_categoria: int
+    id_categoria: Optional[int] = None	
 
     class Config:
         orm_mode = True
