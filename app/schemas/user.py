@@ -11,7 +11,7 @@ class UserBase(BaseModel):
     nombre: str
     correo_electronico: EmailStr
     telefono: Optional[str] = None
-    calificacion: Optional[float] = None
+   
     rol: UserRole
 
 
@@ -24,7 +24,7 @@ class UserUpdate(BaseModel):
     nombre: Optional[str] = None
     correo_electronico: Optional[EmailStr] = None
     telefono: Optional[str] = None
-    calificacion: Optional[float] = None
+
     rol: Optional[UserRole] = None
 
 

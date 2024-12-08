@@ -141,7 +141,7 @@ def create_user(user: UserCreate, db: Session = Depends(get_db)):
         nombre=user.nombre,
         correo_electronico=user.correo_electronico,
         telefono=user.telefono,
-        calificacion=user.calificacion,
+       
         rol=user.rol,
         contrasena=hashed_password,
         profile_picture_url=user.profile_picture_url,  # Guardar la URL de la imagen
